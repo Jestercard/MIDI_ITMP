@@ -22,12 +22,13 @@ int flute_a_five[]    = { 1, 1, 1, 0, 0, 0, 0, 0, 1 };    // Pitch = 81
 int flute_bb_five[]   = { 1, 1, 0, 0, 0, 1, 0, 0, 1 };    // Pitch = 82
 int flute_b_five[]    = { 1, 1, 0, 0, 0, 0, 0, 0, 1 };    // Pitch = 83
 
+int flute_pitch[]     = {72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83};
 
 ///////////////////////////////////// CHANGING VARIABLES AND LISTS /////////////////////////////////////
 
 
-int mode = 0;                   // determines if mode 1 or 2 is activated
-int mode_mem = 0;               // memory history of the mode, allows to determine if a new mode is being selected
+int mode;                       // determines if mode 0 or 1 is activated
+int mode_mem;                   // memory history of the mode, allows to determine if a new mode is being selected
 int delaytimer = 1;             // timer setting for the delays
 
 //mode_0 variables
@@ -39,52 +40,103 @@ int velocity = 64;              // Dynamic for the note (Volume or Gain). Betwee
 int channel = 1;                // MIDI channel to send message ('1' by default).
 int noteon_threshold = 200;     // threshold to trigger the active_note to true.
 int noteoff_threshold = 50;     // threshold to trigger the active_note to false.
-int snapshot[] = { 
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // list that scans for the thresholds.
-int snapshot_mem[] = { 
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // list that takes the previous snapshot and applies it back again.
+int sensefinger[9];             // array to hold detected fingers
+int snapshot[30];               // list that scans for the thresholds.
+int snapshot_mem[30];           // list that takes the previous snapshot and applies it back again.
+int snapshot_large;             // highest number within the snapshot
 
 //mode_1 variables
 
 int input_button = 0;
 int button;
-int inputmem_1 = 0;
-int inputmem_2 = 0;
-int inputmem_3 = 0;
-int inputmem_4 = 0;
-int inputmem_5 = 0;
-int inputmem_6 = 0;
-int inputmem_7 = 0;
-int inputmem_8 = 0;
-int inputmem_9 = 0;
+int input_mem[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int input_mempitch[] = {83, 0, 84, 85, 86, 87, 88, 89, 90, 91};
 
-void check_mode() {
-  if (digitalRead(13) == HIGH){
-    mode = 1;
-  } else { mode = 0; }
+
+///////////////////////////////////// MODE ZERO (Live performance) /////////////////////////////////////
+
+
+void mode_zero() 
+{
+  snapshot[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+           10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+           20, 21, 22, 23, 24, 25, 26, 27, 28, 29] =
+  snapshot_mem[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+         10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+         20, 21, 22, 23, 24, 25, 26, 27, 28, 29];     
+  for (int i = 0; i < 29; i++){
+    snapshot[i] = analogRead(0);
+    get_snapshot_large();
+    check_snapshot();
+    snapshot_mem[i] = snapshot[i];
+    delay(delaytimer);
+  }
 }
 
-void check_fingering() {
+void get_snapshot_large()
+{
+  snapshot_large = snapshot[0];
+  for (int p = 0; p < 29; p++)
+  {
+    if (snapshot[p] >= snapshot_large)
+    {
+      snapshot_large = snapshot[p];
+    }
+  }
+}
 
-// Since pins are INPUT_PULLUP, voltage is being sent through them and read as HIGH when open.
-// Function 'sensefinger' reads pin states and returns opposite voltage values. 
-// **Reminder** HIGH is read as '1' and LOW is read as '0'. '!' changes to opposite.
-// In short, '0' returned if state is open. '1' returned if state is closed. 
+void check_snapshot() 
+{
+  if (active_note == 1) 
+  {
+    if (snapshot_large <= noteoff_threshold) 
+    {
+      active_note = 0;
+      MIDI.sendNoteOff(pitch, velocity, channel);
+    }
+    else 
+    {
+      check_fingering();
+      if (pitch != pitch_mem)
+      {
+        MIDI.sendNoteOff(pitch_mem, velocity, channel);
+        MIDI.sendNoteOn(pitch, velocity, channel);
+        pitch_mem = pitch;
+      }
+    }
+  }
+  else 
+  {
+    if (snapshot_large >= noteon_threshold) 
+    {
+      check_fingering();
+      if (pitch != 0) 
+      {
+        MIDI.sendNoteOn(pitch, velocity, channel);
+        pitch_mem = pitch;
+        active_note += 1;
+      }
+    }
+  }
+}
 
-  int sensefinger[] = {
-    !digitalRead(0), !digitalRead(2), !digitalRead(3),
-    !digitalRead(4), !digitalRead(5), !digitalRead(6),
-    !digitalRead(7), !digitalRead(8), !digitalRead(9)
-    };
-  
-// The following lines check to see if 'sensefinger' matches any known pattern.
-// This sets the pitch for the MIDI message.
-
-// C5 //
+void check_fingering() 
+{
+  for (int x = 0; x < 8; x++)
+  {
+    switch (x) 
+    {
+      case 0:
+        sensefinger[x] = !digitalRead(x);
+        break;
+      case 1:
+        break;
+      default:
+        sensefinger[x] = !digitalRead(x+1);
+        break;
+    }
+  }
+// C5 //  
   if (sensefinger[0] == flute_c_five[0] && sensefinger[1] == flute_c_five[1] && sensefinger[2] == flute_c_five[2] &&
       sensefinger[3] == flute_c_five[3] && sensefinger[4] == flute_c_five[4] && sensefinger[5] == flute_c_five[5] &&
       sensefinger[6] == flute_c_five[6] && sensefinger[7] == flute_c_five[7] && sensefinger[8] == flute_c_five[8]) {pitch = 72;}
@@ -135,79 +187,62 @@ void check_fingering() {
   else {pitch = 0;}    
 }
 
-void check_snapshot() {
-  // if note is actively being played
-  if (active_note == 1) {
-    // if all snapshot values are below the noteoff_threshold
-    if (snapshot[0] <= noteoff_threshold && snapshot[1] <= noteoff_threshold && snapshot[2] <= noteoff_threshold && 
-        snapshot[3] <= noteoff_threshold && snapshot[4] <= noteoff_threshold && snapshot[5] <= noteoff_threshold && 
-        snapshot[6] <= noteoff_threshold && snapshot[7] <= noteoff_threshold && snapshot[8] <= noteoff_threshold &&
-        snapshot[9] <= noteoff_threshold && snapshot[10] <= noteoff_threshold && snapshot[11] <= noteoff_threshold && 
-        snapshot[12] <= noteoff_threshold && snapshot[13] <= noteoff_threshold && snapshot[14] <= noteoff_threshold && 
-        snapshot[15] <= noteoff_threshold && snapshot[16] <= noteoff_threshold && snapshot[17] <= noteoff_threshold &&
-        snapshot[18] <= noteoff_threshold && snapshot[19] <= noteoff_threshold && snapshot[20] <= noteoff_threshold && 
-        snapshot[21] <= noteoff_threshold && snapshot[22] <= noteoff_threshold && snapshot[23] <= noteoff_threshold && 
-        snapshot[24] <= noteoff_threshold && snapshot[25] <= noteoff_threshold && snapshot[26] <= noteoff_threshold && 
-        snapshot[27] <= noteoff_threshold && snapshot[28] <= noteoff_threshold && snapshot[29] <= noteoff_threshold) {
-      //note is no longer being played and thus note off event is sent
-      active_note = false;
-      MIDI.sendNoteOff(pitch, velocity, channel);
-    }
-    // if at least one snapshot value is not below threshold, then chech pattern to see if it has been changed
-    // if pattern is changed, note off event for old note and note on event for new note
-    else {
-      check_fingering();
-      if (pitch != pitch_mem){
-        MIDI.sendNoteOff(pitch_mem, velocity, channel);
-        MIDI.sendNoteOn(pitch, velocity, channel);
-        pitch_mem = pitch;
+/* replacement sketches  
+  int correctfinger = 0;
+  for (int q = 0; q < 11; q++)
+  {
+    for (int o = 0; o < 8; o++)
+    {
+      if (sensefinger[o] != flute_c_five[o])
+      {
+        correctfinger += 1;
       }
     }
-  }
-  // if note is not being played already
-  else {
-    // if at least one snapshot value is above the note on threshold
-    if (snapshot[0] > noteon_threshold || snapshot[1] > noteon_threshold || snapshot[2] > noteon_threshold || 
-        snapshot[3] > noteon_threshold || snapshot[4] > noteon_threshold || snapshot[5] > noteon_threshold || 
-        snapshot[6] > noteon_threshold || snapshot[7] > noteon_threshold || snapshot[8] > noteon_threshold ||
-        snapshot[9] > noteon_threshold || snapshot[10] > noteon_threshold || snapshot[11] > noteon_threshold || 
-        snapshot[12] > noteon_threshold || snapshot[13] > noteon_threshold || snapshot[14] > noteon_threshold || 
-        snapshot[15] > noteon_threshold || snapshot[16] > noteon_threshold || snapshot[17] > noteon_threshold || 
-        snapshot[18] > noteon_threshold || snapshot[19] > noteon_threshold || snapshot[20] > noteon_threshold || 
-        snapshot[21] > noteon_threshold || snapshot[22] > noteon_threshold || snapshot[23] > noteon_threshold || 
-        snapshot[24] > noteon_threshold || snapshot[25] > noteon_threshold || snapshot[26] > noteon_threshold || 
-        snapshot[27] > noteon_threshold || snapshot[28] > noteon_threshold || snapshot[29] > noteon_threshold) {
-      // note has started and thus finger pattern is checked
-      // if pattern is detected, note on even is sent
-      active_note = 1;
-      check_fingering();
-      if (pitch != 0) {
-        MIDI.sendNoteOn(pitch, velocity, channel);
-        pitch_mem = pitch;
-      }
+    if (correctfinger == 9)
+    {
+      pitch = flute_pitch[q];
+    }
+    else
+    {
+      correctfinger = 0;
     }
   }
-}
-void mode_zero() {
-  // takes 30 samples of analog reading to detect is air is being blown into microphone
-  // microphones do not send constant signal upon being blown on like a pressure sensor; they only send signal for how much SPL CHANGES
-  // the timeframe of 30 samples gives it enough to detect note on thresholds while also keeping low latency and not trigger false note off events
-  // delay timer is meant for stability, will go as low as need be without causing hiccups
-  snapshot[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-           10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-           20, 21, 22, 23, 24, 25, 26, 27, 28, 29] =
-  snapshot_mem[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-         10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-         20, 21, 22, 23, 24, 25, 26, 27, 28, 29];     
-  for (int i = 0; i < 29; i++){
-    snapshot[i] = analogRead(0);
-    snapshot_mem[i] = snapshot[i];
-    check_snapshot();
-    delay(delaytimer);
+*/
+
+///////////////////////////////////// MODE ONE (Learning Aid) ///////////////////////////////////////////////////////////
+
+
+void mode_one()
+{
+  for (int j = 0; j < 8; j++)
+  {
+    if (j = 1) 
+    {
+      break;
+    }  
+    else
+    { 
+      check_input(button = j);
+      if (input_button != 0) 
+      {
+        if (input_button != input_mem[j]) 
+        {
+          MIDI.sendNoteOn(input_mempitch[j], velocity, channel);
+        }
+      }
+      else 
+      {
+        if (input_button != input_mem[j])
+        {
+          MIDI.sendNoteOff(input_mempitch[j], velocity, channel);
+        }
+      }
+    }
   }
 }
 
-int check_input(int button) {
+int check_input(int button) 
+{
   if (digitalRead(button) == HIGH) {
     input_button = 0;
   }
@@ -216,134 +251,29 @@ int check_input(int button) {
   }
 }
 
-void mode_one() {
-  check_input(0);
-  if (input_button == 0) {
-    if (inputmem_1 != 0) {
-      MIDI.sendNoteOff(83, velocity, channel);
-      inputmem_1 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_1 != 1) {
-      MIDI.sendNoteOn(83, velocity, channel);
-      inputmem_1 = 1;
-    }
-  }
-  check_input(2);
-  if (input_button == 0) {
-    if (inputmem_2 != 0) {
-      MIDI.sendNoteOff(84, velocity, channel);
-      inputmem_2 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_2 != 1) {
-      MIDI.sendNoteOn(84, velocity, channel);
-      inputmem_2 = 1;
-    }
-  }
-  check_input(3);
-  if (input_button == 0) {
-    if (inputmem_3 != 0) {
-      MIDI.sendNoteOff(85, velocity, channel);
-      inputmem_3 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_3 != 1) {
-      MIDI.sendNoteOn(85, velocity, channel);
-      inputmem_3 = 1;
-    }
-  }
-  check_input(4);
-  if (input_button == 0) {
-    if (inputmem_4 != 0) {
-      MIDI.sendNoteOff(86, velocity, channel);
-      inputmem_4 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_4 != 1) {
-      MIDI.sendNoteOn(86, velocity, channel);
-      inputmem_4 = 1;
-    }
-  }
-  check_input(5);
-  if (input_button == 0) {
-    if (inputmem_5 != 0) {
-      MIDI.sendNoteOff(87, velocity, channel);
-      inputmem_5 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_5 != 1) {
-      MIDI.sendNoteOn(87, velocity, channel);
-      inputmem_5 = 1;
-    }
-  }
-  check_input(6);
-  if (input_button == 0) {
-    if (inputmem_6 != 0) {
-      MIDI.sendNoteOff(88, velocity, channel);
-      inputmem_6 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_6 != 1) {
-      MIDI.sendNoteOn(88, velocity, channel);
-      inputmem_6 = 1;
-    }
-  } check_input(7);
-  if (input_button == 0) {
-    if (inputmem_7 != 0) {
-      MIDI.sendNoteOff(89, velocity, channel);
-      inputmem_7 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_7 != 1) {
-      MIDI.sendNoteOn(89, velocity, channel);
-      inputmem_7 = 1;
-    }
-  }
-  check_input(8);
-  if (input_button == 0) {
-    if (inputmem_8 != 0) {
-      MIDI.sendNoteOff(90, velocity, channel);
-      inputmem_8 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_8 != 1) {
-      MIDI.sendNoteOn(90, velocity, channel);
-      inputmem_8 = 1;
-    }
-  }
-  check_input(9);
-  if (input_button == 0) {
-    if (inputmem_9 != 0) {
-      MIDI.sendNoteOff(91, velocity, channel);
-      inputmem_9 = 0;
-    }
-  } else if (input_button == 1) {
-    if (inputmem_9 != 1) {
-      MIDI.sendNoteOn(91, velocity, channel);
-      inputmem_9 = 1;
-    }
-  }
+
+///////////////////////////////////// NON-MODE FUNCTIONS /////////////////////////////////////////////////////////
+
+
+void check_mode() 
+{
+  if (digitalRead(13) == HIGH){
+    mode = 1;
+  } else { mode = 0; }
 }
 
-void reset_vars() {
+void reset_vars() 
+{
   active_note = 0;
   pitch = 0;
   pitch_mem = 0;
   input_button = 0;
   button = 0;
-  inputmem_1 = 0;
-  inputmem_2 = 0;
-  inputmem_3 = 0;
-  inputmem_4 = 0;
-  inputmem_5 = 0;
-  inputmem_6 = 0;
-  inputmem_7 = 0;
-  inputmem_8 = 0;
-  inputmem_9 = 0;
+  input_mem[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 0;
 }
 
-void setup() {
+void setup() 
+{
   MIDI.begin(MIDI_CHANNEL_OMNI);
   pinMode (0, INPUT_PULLUP);      //thumb key
   pinMode (2, INPUT_PULLUP);      //index LH
@@ -358,17 +288,22 @@ void setup() {
   
 }
 
-void loop() {
+void loop() 
+{
   check_mode();
-  if (mode == 0) {
-    if (mode != mode_mem) {
+  if (mode == 0) 
+  {
+    if (mode != mode_mem) 
+    {
       reset_vars();
       mode_mem = 0;
     }
     mode_zero();
   }
-  else {
-    if (mode != mode_mem) {
+  else 
+  {
+    if (mode != mode_mem) 
+    {
       reset_vars();
       mode_mem = 1;
     }
