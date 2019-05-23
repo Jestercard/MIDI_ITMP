@@ -67,7 +67,7 @@ int input_mempitch[10] = {83, 0, 84, 85, 86, 87, 88, 89, 90, 91};
 ///////////////////////////////////// MODE ZERO (Live performance) /////////////////////////////////////
 
 
-void mode_zero() 
+void mode_zero() //Takes multple samples to read analog inputs detected by microphone. Largest sample is used to determine thresholds.
 {
   snapshot_large = 0; 
   for (int i = 0; i < 799; i++)
@@ -81,7 +81,8 @@ void mode_zero()
   check_snapshot();
 }
 
-void check_snapshot() 
+void check_snapshot() //Largest sample is used to determine thresholds. If note is playing, check to see if pattern matches and if pattern is different than before.
+                      // If note is not playing, check to see if note was playing before and then stop, or do nothing.
 {
   if (active_note == 1) 
   {
@@ -123,7 +124,7 @@ void check_snapshot()
   }
 }
 
-void check_fingering() 
+void check_fingering() //Reads the digital inputs and compares them against the pattern arrays above for a potential match.
 {
   int sensefinger[] = {!digitalRead(0), !digitalRead(2), !digitalRead(3), 
                        !digitalRead(4), !digitalRead(5), !digitalRead(6),
@@ -184,7 +185,7 @@ void check_fingering()
 ///////////////////////////////////// MODE ONE (Learning Aid) ///////////////////////////////////////////////////////////
 
 
-void mode_one()
+void mode_one() //Detects each button one at a time and determines if it has changed by comparing it against input_mem.
 {
   for (int j = 0; j < 10; j++)
   {
@@ -226,7 +227,7 @@ void mode_one()
 ///////////////////////////////////// NON-MODE FUNCTIONS /////////////////////////////////////////////////////////
 
 
-void reset_vars() 
+void reset_vars() //If there is a change in the mode, this is called to make sure nothing affects the new mode or going back to the old mode.
 {
   active_note = 0;
   pitch = 0;
@@ -236,7 +237,7 @@ void reset_vars()
   input_mem[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 0;
 }
 
-void setup() 
+void setup() //Enables midi abilities and sets up inputs as pullup. This way, buttons need only be connected from Pin to Ground.
 {
   MIDI.begin(MIDI_CHANNEL_OMNI);
   pinMode (0, INPUT_PULLUP);      //thumb key
@@ -252,7 +253,8 @@ void setup()
   
 }
 
-void loop()
+void loop()   //Reads the mode input and determines if mode 0 or mode 1. If there is a change in made (detected by mode_mem), then reset_vars is triggered.
+              //Repeats over and over until program is terminated by unplugging the Arduino board.
 {
   mode = !digitalRead(13);
   if (mode == 0) 
