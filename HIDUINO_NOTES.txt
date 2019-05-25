@@ -26,9 +26,9 @@ AWESOME NOTES TO REMEMBER ABOUT HIDUINO
    
    Digital(13)				SCK_			/////|5V		   MISO|/////
    
-   5Volts					5V__			/////|_________________|/////
+   5Volts				5V__			/////|_________________|/////
    
-   Ground					GRD_			////////////////////////o////
+   Ground				GRD_			////////////////////////o////
 
 - Connect GRD and RESET of the Programmer to each other with a 10uF capacitor. Note the polarity of the capacitor (negative to ground).
 - Connect Target board into computer via USB.
