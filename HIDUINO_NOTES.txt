@@ -16,19 +16,19 @@ AWESOME NOTES TO REMEMBER ABOUT HIDUINO
 3) Connect Programmer board to Target Board and flash the HIDUINO firmware:
 - Using M-F jumpers, connect the pins from Programmer to ICSP headers on the Target USB controller. Note that the pins are close to the USB connector. Use the following diagrams on how to make the connections.
 
-   **PROGRAMMER**			**TARGET**			/////Example ICSP Header/////
+   **PROGRAMMER**			**TARGET**		/////Example ICSP Header/////
 
-   Digital(10)		 		Reset			//////_________________//////
+   Digital(10)				Reset			//////_________________//////
    
-   Digital(11)		 		MOSI			/////|GRD	      RESET|/////
+   Digital(11)				MOSI			/////|GRD	      RESET|/////
    
-   Digital(12) 		 		MISO			/////|MOSI	        SCK|/////
+   Digital(12)				MISO			/////|MOSI	        SCK|/////
    
-   Digital(13)		 		SCK_			/////|5V		   MISO|/////
+   Digital(13)				SCK_			/////|5V		   MISO|/////
    
-   5Volts				 	5V__			/////|_________________|/////
+   5Volts					5V__			/////|_________________|/////
    
-   Ground				 	GRD_			////////////////////////o////
+   Ground					GRD_			////////////////////////o////
 
 - Connect GRD and RESET of the Programmer to each other with a 10uF capacitor. Note the polarity of the capacitor (negative to ground).
 - Connect Target board into computer via USB.
@@ -51,5 +51,3 @@ avrdude -p m16u2 -F -P "PORT YOU HAVE YOUR PROGRAMMER PLUGGED INTO" -c avrisp -U
 - In the Arduino IDE, set the Programmer to 'Arduino as ISP'. When flashing sketches, make sure to hold shift and then click the '=>' to use the programmer. 
 
 5) You are now able to upload custom sketches! :D
-
-*diagrams shown above were written in Notepad++ and may not display accurately on github.
