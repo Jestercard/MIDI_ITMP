@@ -16,7 +16,7 @@ AWESOME NOTES TO REMEMBER ABOUT HIDUINO
 3) Connect Programmer board to Target Board and flash the HIDUINO firmware:
 - Using M-F jumpers, connect the pins from Programmer to ICSP headers on the Target USB controller. Note that the pins are close to the USB connector. Use the following diagrams on how to make the connections.
 
-///PROGRAMMER////////       TARGET			/////Example ICSP Header/////
+   **PROGRAMMER**			**TARGET**			/////Example ICSP Header/////
 
    Digital(10)		 		Reset			//////_________________//////
    
@@ -24,11 +24,11 @@ AWESOME NOTES TO REMEMBER ABOUT HIDUINO
    
    Digital(12) 		 		MISO			/////|MOSI	        SCK|/////
    
-   Digital(13)		 		SCK				/////|5V		   MISO|/////
+   Digital(13)		 		SCK_			/////|5V		   MISO|/////
    
-   5V				 		5V				/////|_________________|/////
+   5Volts				 	5V__			/////|_________________|/////
    
-   GRD				 		GRD				////////////////////////o////
+   Ground				 	GRD_			////////////////////////o////
 
 - Connect GRD and RESET of the Programmer to each other with a 10uF capacitor. Note the polarity of the capacitor (negative to ground).
 - Connect Target board into computer via USB.
@@ -39,13 +39,13 @@ avrdude -p m16u2 -F -P "PORT YOU HAVE YOUR PROGRAMMER PLUGGED INTO" -c avrisp -U
 4) Connect programmer and target to allow manual flashing of the main microcontroller for sketches:
 - Using M-M jumpers, connect the pins from the Programmer to the following pins of the Target.
 
-///PROGRAMMER////////TARGET////////////
+///PROGRAMMER////////////////TARGET////////////
    Digital(10)			Reset - power rail
    Digital(11)			Digital(11)
    Digital(12)			Digital(12)
    Digital(13)			Digital(13)
-   5V					5V    - power rail
-   GRD			   		GRD   - power rail
+   5Volts				5V    - power rail
+   Ground		   		GRD   - power rail
 
 - Connect GRD and RESET of the Programmer to each other with a 10uF capacitor. Note the polarity of the capacitor (negative to ground).
 - In the Arduino IDE, set the Programmer to 'Arduino as ISP'. When flashing sketches, make sure to hold shift and then click the '=>' to use the programmer. 
