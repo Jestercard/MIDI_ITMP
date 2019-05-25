@@ -1,5 +1,7 @@
 AWESOME NOTES TO REMEMBER ABOUT HIDUINO
 
+**Diagrams were written in Notepad++ so formatting may appear odd on website**
+
 1) What you will need:
 - Install WinAVR (best to do on c drive)
 - Install Arduino IDE
