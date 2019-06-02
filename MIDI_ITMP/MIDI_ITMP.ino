@@ -53,7 +53,7 @@ int velocity = 64;              // Dynamic for the note (Volume or Gain). Betwee
 int channel = 1;                // MIDI channel to send message ('1' by default).
 int noteon_threshold = 100;     // threshold to trigger the active_note to true.
 int noteoff_threshold = 50;     // threshold to trigger the active_note to false.
-int snapshot[800];              // list that scans for the thresholds.
+int snapshot[30];              // list that scans for the thresholds.
 
 
 //mode_1 variables
@@ -70,12 +70,13 @@ int input_mempitch[10] = {83, 0, 84, 85, 86, 87, 88, 89, 90, 91};
 void mode_zero() //Takes multple samples to read analog inputs detected by microphone. Largest sample is used to determine thresholds.
 {
   snapshot_large = 0; 
-  for (int i = 0; i < 799; i++)
+  for (int i = 0; i < 30; i++)
   {
     snapshot[i] = analogRead(0);
     if (snapshot[i] > snapshot_large)
     {
       snapshot_large = snapshot[i];
+      delay(delaytimer / 10);
     }
   }
   check_snapshot();
