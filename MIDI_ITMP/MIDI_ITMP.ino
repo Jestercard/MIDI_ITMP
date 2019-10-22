@@ -37,7 +37,6 @@ int fluteFiveBPitch    = 83;
 
 ///////////////////////////////////// CHANGING VARIABLES AND LISTS /////////////////////////////////////
 
-
 int mode;                      // determines if mode 0 or 1 is activated
 int modeMem;                   // memory history of the mode, allows to determine if a new mode is being selected
 int delayTimer = 10;           // timer setting for the delays
@@ -48,13 +47,11 @@ bool activeNote = false;       // 'false' means note is off. 'true' means note i
 int pitch = 0;                 // MIDI value for given note (ie, '72' is note C5).
 int pitchMem = 0;              // memory pitch MIDI value.
 int snapshotLarge = 0;         // highest number within the snapshot
-
 int velocity = 64;             // Dynamic for the note (Volume or Gain). Between 0 (silent) and 127 (loudest).
 int channel = 1;               // MIDI channel to send message ('1' by default).
 int noteOnThreshold = 100;     // threshold to trigger the activeNote to true.
 int noteOffThreshold = 50;     // threshold to trigger the activeNote to false.
 int snapshot[30];              // array that scans for the thresholds.
-
 
 //Learn Mode variables
 
@@ -62,40 +59,32 @@ int button;
 int inputMemory[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int inputMemoryPitch[10] = {83, 0, 84, 85, 86, 87, 88, 89, 90, 91};
 
+///////////////////////////////////// MODE SYNTH (Live performance) /////////////////////////////////////
 
-///////////////////////////////////// MODE ZERO (Live performance) /////////////////////////////////////
-
-
-void ModeSynth() //Takes multple samples to read analog inputs detected by microphone. Largest sample is used to determine thresholds.
-{
+//Takes multple samples to read analog inputs detected by microphone. Largest sample is used to determine thresholds.
+void ModeSynth(){ 
   snapshotLarge = 0; 
-  for (int i = 0; i < 30; i++)
-  {
+  for (int i = 0; i < 30; i++){
     snapshot[i] = analogRead(0);
-    if (snapshot[i] > snapshotLarge)
-    {
+    if (snapshot[i] > snapshotLarge){
       snapshotLarge = snapshot[i];
       delay(delayTimer / 10);
     }
   }
 }
 
-void CheckSnapshot() //Largest sample is used to determine thresholds. If note is playing, check to see if pattern matches and if pattern is different than before.
-                      // If note is not playing, check to see if note was playing before and then stop, or do nothing.
-{
-  if (activeNote) 
-  {
-    if (snapshotLarge <= noteOffThreshold) 
-    {
+//Largest sample is used to determine thresholds. If note is playing, check to see if pattern matches and if pattern is different than before.
+//If note is not playing, check to see if note was playing before and then stop, or do nothing
+void CheckSnapshot(){
+  if (activeNote){
+    if (snapshotLarge <= noteOffThreshold){
       activeNote = false;
       MIDI.sendNoteOff(pitch, velocity, channel);
       delay(delayTimer);
     }
-    else if (snapshotLarge > noteOffThreshold)
-    {
+    else if (snapshotLarge > noteOffThreshold){
       CheckFingering();
-      if (pitch != pitchMem)
-      {
+      if (pitch != pitchMem){
         MIDI.sendNoteOff(pitchMem, velocity, channel);
         MIDI.sendNoteOn(pitch, velocity, channel);
         pitchMem = pitch;
@@ -103,32 +92,24 @@ void CheckSnapshot() //Largest sample is used to determine thresholds. If note i
       }
     }
   }
-  else
-  {
-    if (snapshotLarge >= noteOnThreshold) 
-    {
+  else{
+    if (snapshotLarge >= noteOnThreshold){
       CheckFingering();
-      if (pitch != 0) 
-      {
+      if (pitch != 0){
         MIDI.sendNoteOn(pitch, velocity, channel);
         pitchMem = pitch;
         activeNote = true;
         delay(delayTimer);
       }
     }
-    else if (snapshotLarge < noteOnThreshold)
-    {
-      ;
-    }
   }
 }
 
-void CheckFingering() //Reads the digital inputs and compares them against the pattern arrays above for a potential match.
-{
+//Reads the digital inputs and compares them against the pattern arrays above for a potential match.
+void CheckFingering(){
   int senseFinger[] = {!digitalRead(0), !digitalRead(2), !digitalRead(3), 
                        !digitalRead(4), !digitalRead(5), !digitalRead(6),
                        !digitalRead(7), !digitalRead(8), !digitalRead(9)};
-
 // C5 //  
   if (senseFinger[0] == fluteFiveC[0] && senseFinger[1] == fluteFiveC[1] && senseFinger[2] == fluteFiveC[2] &&
       senseFinger[3] == fluteFiveC[3] && senseFinger[4] == fluteFiveC[4] && senseFinger[5] == fluteFiveC[5] &&
@@ -180,43 +161,26 @@ void CheckFingering() //Reads the digital inputs and compares them against the p
   else {pitch = 0;}    
 }
 
+///////////////////////////////////// MODE LEARN (Learning Aid) ///////////////////////////////////////////////////////////
 
-///////////////////////////////////// MODE ONE (Learning Aid) ///////////////////////////////////////////////////////////
-
-
-void ModeLearn() //Detects each button one at a time and determines if it has changed by comparing it against inputMemory.
-{
-  for (int j = 0; j < 10; j++)
-  {
-    switch(j) 
-    {
-      case 1: //no pin mapped to '1', 
+//Detects each button one at a time and determines if it has changed by comparing it against inputMemory
+void ModeLearn(){
+  for (int j = 0; j < 10; j++){
+    switch(j){
+      case 1:
+        //no pin mapped to '1'
         break;
       default:
-        if (!digitalRead(j) == 1) 
-        {
-          if (inputMemory[j] == 0) 
-          {
+        if (!digitalRead(j) == 1){
+          if (inputMemory[j] == 0){
             MIDI.sendNoteOn(inputMemoryPitch[j], velocity, channel);
             inputMemory[j] = 1;
-            ;
-          }
-          else if (inputMemory[j] == 1)
-          {
-            ;
           }
         }
-        else 
-        {
-          if (inputMemory[j] == 1)
-          {
+        else{
+          if (inputMemory[j] == 1){
             MIDI.sendNoteOff(inputMemoryPitch[j], velocity, channel);
             inputMemory[j] = 0;
-            ;
-          }
-          else if (inputMemory[j] == 0)
-          {
-            ;
           }
         }
         break;
@@ -226,9 +190,8 @@ void ModeLearn() //Detects each button one at a time and determines if it has ch
 
 ///////////////////////////////////// NON-MODE FUNCTIONS /////////////////////////////////////////////////////////
 
-
-void ResetVars() //If there is a change in the mode, this is called to make sure nothing affects the new mode or going back to the old mode.
-{
+//If there is a change in the mode, this is called to make sure nothing affects the new mode or going back to the old mode.
+void ResetVars(){
   activeNote = false;
   pitch = 0;
   pitchMem = 0;
@@ -236,8 +199,8 @@ void ResetVars() //If there is a change in the mode, this is called to make sure
   inputMemory[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 0;
 }
 
-void setup() //Enables MIDI abilities and sets up inputs as pullup. This way, buttons need only be connected from Pin to Ground.
-{
+//Enables MIDI abilities and sets up inputs as pullup. This way, buttons need only be connected from Pin to Ground.
+void setup(){
   MIDI.begin(MIDI_CHANNEL_OMNI);
   pinMode (0, INPUT_PULLUP);      //thumb key
   pinMode (2, INPUT_PULLUP);      //index LH
@@ -252,24 +215,20 @@ void setup() //Enables MIDI abilities and sets up inputs as pullup. This way, bu
   
 }
 
-void loop()   //Reads the mode input and determines if mode 0 or mode 1. If there is a change in made (detected by modeMem), then reset_vars is triggered.
-              //Repeats over and over until program is terminated by unplugging the Arduino board.
-{
+//Reads the mode input and determines if mode 0 or mode 1. If there is a change in made (detected by modeMem), then ResetVars is triggered.
+//Repeats over and over until program is terminated by unplugging the Arduino board.
+void loop(){
   mode = !digitalRead(13);
-  if (mode == 0) 
-  {
-    if (mode != modeMem) 
-    {
+  if (mode == 0){
+    if (mode != modeMem){
       ResetVars();
       modeMem = 0;
     }
     ModeSynth();
     CheckSnapshot();
   }
-  else 
-  {
-    if (mode != modeMem) 
-    {
+  else{
+    if (mode != modeMem){
       ResetVars();
       modeMem = 1;
     }
