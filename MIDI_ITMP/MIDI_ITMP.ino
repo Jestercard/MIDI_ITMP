@@ -9,176 +9,174 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 // with Pin(0), then Pin(2), then Pin(3) and so on until Pin(9). Half steps are represented in flat (or 'b').
 // '0' means button is open. '1' means button is closed.
 
-int flute_c_five[]    = { 0, 1, 0, 0, 0, 0, 0, 0, 1 };    // Pitch = 72
-int flute_db_five[]   = { 0, 0, 0, 0, 0, 0, 0, 0, 1 };    // Pitch = 73
-int flute_d_five[]    = { 1, 0, 1, 1, 0, 1, 1, 1, 0 };    // Pitch = 74
-int flute_eb_five[]   = { 1, 0, 1, 1, 0, 1, 1, 1, 1 };    // Pitch = 75
-int flute_e_five[]    = { 1, 1, 1, 1, 0, 1, 1, 0, 1 };    // Pitch = 76
-int flute_f_five[]    = { 1, 1, 1, 1, 0, 1, 0, 0, 1 };    // Pitch = 77
-int flute_gb_five[]   = { 1, 1, 1, 1, 0, 0, 0, 1, 1 };    // Pitch = 78
-int flute_g_five[]    = { 1, 1, 1, 1, 0, 0, 0, 0, 1 };    // Pitch = 79
-int flute_ab_five[]   = { 1, 1, 1, 1, 1, 0, 0, 0, 1 };    // Pitch = 80
-int flute_a_five[]    = { 1, 1, 1, 0, 0, 0, 0, 0, 1 };    // Pitch = 81
-int flute_bb_five[]   = { 1, 1, 0, 0, 0, 1, 0, 0, 1 };    // Pitch = 82
-int flute_b_five[]    = { 1, 1, 0, 0, 0, 0, 0, 0, 1 };    // Pitch = 83
+int fluteFiveC[]    = { 0, 1, 0, 0, 0, 0, 0, 0, 1 };    // Pitch = 72
+int fluteFiveDb[]   = { 0, 0, 0, 0, 0, 0, 0, 0, 1 };    // Pitch = 73
+int fluteFiveD[]    = { 1, 0, 1, 1, 0, 1, 1, 1, 0 };    // Pitch = 74
+int fluteFiveEb[]   = { 1, 0, 1, 1, 0, 1, 1, 1, 1 };    // Pitch = 75
+int fluteFiveE[]    = { 1, 1, 1, 1, 0, 1, 1, 0, 1 };    // Pitch = 76
+int fluteFiveF[]    = { 1, 1, 1, 1, 0, 1, 0, 0, 1 };    // Pitch = 77
+int fluteFiveGb[]   = { 1, 1, 1, 1, 0, 0, 0, 1, 1 };    // Pitch = 78
+int fluteFiveG[]    = { 1, 1, 1, 1, 0, 0, 0, 0, 1 };    // Pitch = 79
+int fluteFiveAb[]   = { 1, 1, 1, 1, 1, 0, 0, 0, 1 };    // Pitch = 80
+int fluteFiveA[]    = { 1, 1, 1, 0, 0, 0, 0, 0, 1 };    // Pitch = 81
+int fluteFiveBb[]   = { 1, 1, 0, 0, 0, 1, 0, 0, 1 };    // Pitch = 82
+int fluteFiveB[]    = { 1, 1, 0, 0, 0, 0, 0, 0, 1 };    // Pitch = 83
 
-int flute_c_five_pitch    = 72;
-int flute_db_five_pitch   = 73;
-int flute_d_five_pitch    = 74;
-int flute_eb_five_pitch   = 75;
-int flute_e_five_pitch    = 76;
-int flute_f_five_pitch    = 77;
-int flute_gb_five_pitch   = 78;
-int flute_g_five_pitch    = 79;
-int flute_ab_five_pitch   = 80;
-int flute_a_five_pitch    = 81;
-int flute_bb_five_pitch   = 82;
-int flute_b_five_pitch    = 83;
+int fluteFiveCPitch    = 72;
+int fluteFiveDbPitch   = 73;
+int fluteFiveDPitch    = 74;
+int fluteFiveEbPitch   = 75;
+int fluteFiveEPitch    = 76;
+int fluteFiveFPitch    = 77;
+int fluteFiveGbPitch   = 78;
+int fluteFiveGPitch    = 79;
+int fluteFiveAbPitch   = 80;
+int fluteFiveAPitch    = 81;
+int fluteFiveBbPitch   = 82;
+int fluteFiveBPitch    = 83;
 
 ///////////////////////////////////// CHANGING VARIABLES AND LISTS /////////////////////////////////////
 
 
-int mode;                       // determines if mode 0 or 1 is activated
-int mode_mem;                   // memory history of the mode, allows to determine if a new mode is being selected
-int delaytimer = 10;            // timer setting for the delays
+int mode;                      // determines if mode 0 or 1 is activated
+int modeMem;                   // memory history of the mode, allows to determine if a new mode is being selected
+int delayTimer = 10;           // timer setting for the delays
 
-//mode_0 variables
+//Synth Mode variables
 
-int active_note = 0;            // '0' means note is off. '1' means note is on.
-int pitch = 0;                  // MIDI value for given note (ie, '72' is note C5).
-int pitch_mem = 0;              // memory pitch MIDI value.
-int snapshot_large = 0;         // highest number within the snapshot
+bool activeNote = false;       // 'false' means note is off. 'true' means note is on.
+int pitch = 0;                 // MIDI value for given note (ie, '72' is note C5).
+int pitchMem = 0;              // memory pitch MIDI value.
+int snapshotLarge = 0;         // highest number within the snapshot
 
-int velocity = 64;              // Dynamic for the note (Volume or Gain). Between 0 (silent) and 127 (loudest).
-int channel = 1;                // MIDI channel to send message ('1' by default).
-int noteon_threshold = 100;     // threshold to trigger the active_note to true.
-int noteoff_threshold = 50;     // threshold to trigger the active_note to false.
-int snapshot[30];              // list that scans for the thresholds.
+int velocity = 64;             // Dynamic for the note (Volume or Gain). Between 0 (silent) and 127 (loudest).
+int channel = 1;               // MIDI channel to send message ('1' by default).
+int noteOnThreshold = 100;     // threshold to trigger the activeNote to true.
+int noteOffThreshold = 50;     // threshold to trigger the activeNote to false.
+int snapshot[30];              // array that scans for the thresholds.
 
 
-//mode_1 variables
+//Learn Mode variables
 
-int input_button = 0;
 int button;
-int input_mem[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-int input_mempitch[10] = {83, 0, 84, 85, 86, 87, 88, 89, 90, 91};
+int inputMemory[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int inputMemoryPitch[10] = {83, 0, 84, 85, 86, 87, 88, 89, 90, 91};
 
 
 ///////////////////////////////////// MODE ZERO (Live performance) /////////////////////////////////////
 
 
-void mode_zero() //Takes multple samples to read analog inputs detected by microphone. Largest sample is used to determine thresholds.
+void ModeSynth() //Takes multple samples to read analog inputs detected by microphone. Largest sample is used to determine thresholds.
 {
-  snapshot_large = 0; 
+  snapshotLarge = 0; 
   for (int i = 0; i < 30; i++)
   {
     snapshot[i] = analogRead(0);
-    if (snapshot[i] > snapshot_large)
+    if (snapshot[i] > snapshotLarge)
     {
-      snapshot_large = snapshot[i];
-      delay(delaytimer / 10);
+      snapshotLarge = snapshot[i];
+      delay(delayTimer / 10);
     }
   }
-  check_snapshot();
 }
 
-void check_snapshot() //Largest sample is used to determine thresholds. If note is playing, check to see if pattern matches and if pattern is different than before.
+void CheckSnapshot() //Largest sample is used to determine thresholds. If note is playing, check to see if pattern matches and if pattern is different than before.
                       // If note is not playing, check to see if note was playing before and then stop, or do nothing.
 {
-  if (active_note == 1) 
+  if (activeNote) 
   {
-    if (snapshot_large <= noteoff_threshold) 
+    if (snapshotLarge <= noteOffThreshold) 
     {
-      active_note = 0;
+      activeNote = false;
       MIDI.sendNoteOff(pitch, velocity, channel);
-      delay(delaytimer);
+      delay(delayTimer);
     }
-    else if (snapshot_large > noteoff_threshold)
+    else if (snapshotLarge > noteOffThreshold)
     {
-      check_fingering();
-      if (pitch != pitch_mem)
+      CheckFingering();
+      if (pitch != pitchMem)
       {
-        MIDI.sendNoteOff(pitch_mem, velocity, channel);
+        MIDI.sendNoteOff(pitchMem, velocity, channel);
         MIDI.sendNoteOn(pitch, velocity, channel);
-        pitch_mem = pitch;
-        delay(delaytimer);
+        pitchMem = pitch;
+        delay(delayTimer);
       }
     }
   }
-  else if (active_note == 0)
+  else
   {
-    if (snapshot_large >= noteon_threshold) 
+    if (snapshotLarge >= noteOnThreshold) 
     {
-      check_fingering();
+      CheckFingering();
       if (pitch != 0) 
       {
         MIDI.sendNoteOn(pitch, velocity, channel);
-        pitch_mem = pitch;
-        active_note = 1;
-        delay(delaytimer);
+        pitchMem = pitch;
+        activeNote = true;
+        delay(delayTimer);
       }
     }
-    else if (snapshot_large < noteon_threshold)
+    else if (snapshotLarge < noteOnThreshold)
     {
       ;
     }
   }
 }
 
-void check_fingering() //Reads the digital inputs and compares them against the pattern arrays above for a potential match.
+void CheckFingering() //Reads the digital inputs and compares them against the pattern arrays above for a potential match.
 {
-  int sensefinger[] = {!digitalRead(0), !digitalRead(2), !digitalRead(3), 
+  int senseFinger[] = {!digitalRead(0), !digitalRead(2), !digitalRead(3), 
                        !digitalRead(4), !digitalRead(5), !digitalRead(6),
                        !digitalRead(7), !digitalRead(8), !digitalRead(9)};
 
 // C5 //  
-  if (sensefinger[0] == flute_c_five[0] && sensefinger[1] == flute_c_five[1] && sensefinger[2] == flute_c_five[2] &&
-      sensefinger[3] == flute_c_five[3] && sensefinger[4] == flute_c_five[4] && sensefinger[5] == flute_c_five[5] &&
-      sensefinger[6] == flute_c_five[6] && sensefinger[7] == flute_c_five[7] && sensefinger[8] == flute_c_five[8]) {pitch = flute_c_five_pitch;}
+  if (senseFinger[0] == fluteFiveC[0] && senseFinger[1] == fluteFiveC[1] && senseFinger[2] == fluteFiveC[2] &&
+      senseFinger[3] == fluteFiveC[3] && senseFinger[4] == fluteFiveC[4] && senseFinger[5] == fluteFiveC[5] &&
+      senseFinger[6] == fluteFiveC[6] && senseFinger[7] == fluteFiveC[7] && senseFinger[8] == fluteFiveC[8]) {pitch = fluteFiveCPitch;}
 // Db5 //
-  else if (sensefinger[0] == flute_db_five[0] && sensefinger[1] == flute_db_five[1] && sensefinger[2] == flute_db_five[2] &&
-           sensefinger[3] == flute_db_five[3] && sensefinger[4] == flute_db_five[4] && sensefinger[5] == flute_db_five[5] &&
-           sensefinger[6] == flute_db_five[6] && sensefinger[7] == flute_db_five[7] && sensefinger[8] == flute_db_five[8]) {pitch = flute_db_five_pitch;}
+  else if (senseFinger[0] == fluteFiveDb[0] && senseFinger[1] == fluteFiveDb[1] && senseFinger[2] == fluteFiveDb[2] &&
+           senseFinger[3] == fluteFiveDb[3] && senseFinger[4] == fluteFiveDb[4] && senseFinger[5] == fluteFiveDb[5] &&
+           senseFinger[6] == fluteFiveDb[6] && senseFinger[7] == fluteFiveDb[7] && senseFinger[8] == fluteFiveDb[8]) {pitch = fluteFiveDbPitch;}
 // D5 //
-  else if (sensefinger[0] == flute_d_five[0] && sensefinger[1] == flute_d_five[1] && sensefinger[2] == flute_d_five[2] &&
-           sensefinger[3] == flute_d_five[3] && sensefinger[4] == flute_d_five[4] && sensefinger[5] == flute_d_five[5] &&
-           sensefinger[6] == flute_d_five[6] && sensefinger[7] == flute_d_five[7] && sensefinger[8] == flute_d_five[8]) {pitch = flute_d_five_pitch;}
+  else if (senseFinger[0] == fluteFiveD[0] && senseFinger[1] == fluteFiveD[1] && senseFinger[2] == fluteFiveD[2] &&
+           senseFinger[3] == fluteFiveD[3] && senseFinger[4] == fluteFiveD[4] && senseFinger[5] == fluteFiveD[5] &&
+           senseFinger[6] == fluteFiveD[6] && senseFinger[7] == fluteFiveD[7] && senseFinger[8] == fluteFiveD[8]) {pitch = fluteFiveDPitch;}
 // Eb5 //
-  else if (sensefinger[0] == flute_eb_five[0] && sensefinger[1] == flute_eb_five[1] && sensefinger[2] == flute_eb_five[2] &&
-           sensefinger[3] == flute_eb_five[3] && sensefinger[4] == flute_eb_five[4] && sensefinger[5] == flute_eb_five[5] &&
-           sensefinger[6] == flute_eb_five[6] && sensefinger[7] == flute_eb_five[7] && sensefinger[8] == flute_eb_five[8]) {pitch = flute_eb_five_pitch;}
+  else if (senseFinger[0] == fluteFiveEb[0] && senseFinger[1] == fluteFiveEb[1] && senseFinger[2] == fluteFiveEb[2] &&
+           senseFinger[3] == fluteFiveEb[3] && senseFinger[4] == fluteFiveEb[4] && senseFinger[5] == fluteFiveEb[5] &&
+           senseFinger[6] == fluteFiveEb[6] && senseFinger[7] == fluteFiveEb[7] && senseFinger[8] == fluteFiveEb[8]) {pitch = fluteFiveEbPitch;}
 // E5 //
-  else if (sensefinger[0] == flute_e_five[0] && sensefinger[1] == flute_e_five[1] && sensefinger[2] == flute_e_five[2] &&
-           sensefinger[3] == flute_e_five[3] && sensefinger[4] == flute_e_five[4] && sensefinger[5] == flute_e_five[5] &&
-           sensefinger[6] == flute_e_five[6] && sensefinger[7] == flute_e_five[7] && sensefinger[8] == flute_e_five[8]) {pitch = flute_e_five_pitch;}
+  else if (senseFinger[0] == fluteFiveE[0] && senseFinger[1] == fluteFiveE[1] && senseFinger[2] == fluteFiveE[2] &&
+           senseFinger[3] == fluteFiveE[3] && senseFinger[4] == fluteFiveE[4] && senseFinger[5] == fluteFiveE[5] &&
+           senseFinger[6] == fluteFiveE[6] && senseFinger[7] == fluteFiveE[7] && senseFinger[8] == fluteFiveE[8]) {pitch = fluteFiveEPitch;}
 // F5 //
-  else if (sensefinger[0] == flute_f_five[0] && sensefinger[1] == flute_f_five[1] && sensefinger[2] == flute_f_five[2] &&
-           sensefinger[3] == flute_f_five[3] && sensefinger[4] == flute_f_five[4] && sensefinger[5] == flute_f_five[5] &&
-           sensefinger[6] == flute_f_five[6] && sensefinger[7] == flute_f_five[7] && sensefinger[8] == flute_f_five[8]) {pitch = flute_f_five_pitch;}
+  else if (senseFinger[0] == fluteFiveF[0] && senseFinger[1] == fluteFiveF[1] && senseFinger[2] == fluteFiveF[2] &&
+           senseFinger[3] == fluteFiveF[3] && senseFinger[4] == fluteFiveF[4] && senseFinger[5] == fluteFiveF[5] &&
+           senseFinger[6] == fluteFiveF[6] && senseFinger[7] == fluteFiveF[7] && senseFinger[8] == fluteFiveF[8]) {pitch = fluteFiveFPitch;}
 // Gb5 //
-  else if (sensefinger[0] == flute_gb_five[0] && sensefinger[1] == flute_gb_five[1] && sensefinger[2] == flute_gb_five[2] &&
-           sensefinger[3] == flute_gb_five[3] && sensefinger[4] == flute_gb_five[4] && sensefinger[5] == flute_gb_five[5] &&
-           sensefinger[6] == flute_gb_five[6] && sensefinger[7] == flute_gb_five[7] && sensefinger[8] == flute_gb_five[8]) {pitch = flute_gb_five_pitch;}
+  else if (senseFinger[0] == fluteFiveGb[0] && senseFinger[1] == fluteFiveGb[1] && senseFinger[2] == fluteFiveGb[2] &&
+           senseFinger[3] == fluteFiveGb[3] && senseFinger[4] == fluteFiveGb[4] && senseFinger[5] == fluteFiveGb[5] &&
+           senseFinger[6] == fluteFiveGb[6] && senseFinger[7] == fluteFiveGb[7] && senseFinger[8] == fluteFiveGb[8]) {pitch = fluteFiveGbPitch;}
 // G5 //
-  else if (sensefinger[0] == flute_g_five[0] && sensefinger[1] == flute_g_five[1] && sensefinger[2] == flute_g_five[2] &&
-           sensefinger[3] == flute_g_five[3] && sensefinger[4] == flute_g_five[4] && sensefinger[5] == flute_g_five[5] &&
-           sensefinger[6] == flute_g_five[6] && sensefinger[7] == flute_g_five[7] && sensefinger[8] == flute_g_five[8]) {pitch = flute_g_five_pitch;}
+  else if (senseFinger[0] == fluteFiveG[0] && senseFinger[1] == fluteFiveG[1] && senseFinger[2] == fluteFiveG[2] &&
+           senseFinger[3] == fluteFiveG[3] && senseFinger[4] == fluteFiveG[4] && senseFinger[5] == fluteFiveG[5] &&
+           senseFinger[6] == fluteFiveG[6] && senseFinger[7] == fluteFiveG[7] && senseFinger[8] == fluteFiveG[8]) {pitch = fluteFiveGPitch;}
 // Ab5 //
-  else if (sensefinger[0] == flute_ab_five[0] && sensefinger[1] == flute_ab_five[1] && sensefinger[2] == flute_ab_five[2] &&
-           sensefinger[3] == flute_ab_five[3] && sensefinger[4] == flute_ab_five[4] && sensefinger[5] == flute_ab_five[5] &&
-           sensefinger[6] == flute_ab_five[6] && sensefinger[7] == flute_ab_five[7] && sensefinger[8] == flute_ab_five[8]) {pitch = flute_ab_five_pitch;}
+  else if (senseFinger[0] == fluteFiveAb[0] && senseFinger[1] == fluteFiveAb[1] && senseFinger[2] == fluteFiveAb[2] &&
+           senseFinger[3] == fluteFiveAb[3] && senseFinger[4] == fluteFiveAb[4] && senseFinger[5] == fluteFiveAb[5] &&
+           senseFinger[6] == fluteFiveAb[6] && senseFinger[7] == fluteFiveAb[7] && senseFinger[8] == fluteFiveAb[8]) {pitch = fluteFiveAbPitch;}
 // A5 //
-  else if (sensefinger[0] == flute_a_five[0] && sensefinger[1] == flute_a_five[1] && sensefinger[2] == flute_a_five[2] &&
-           sensefinger[3] == flute_a_five[3] && sensefinger[4] == flute_a_five[4] && sensefinger[5] == flute_a_five[5] &&
-           sensefinger[6] == flute_a_five[6] && sensefinger[7] == flute_a_five[7] && sensefinger[8] == flute_a_five[8]) {pitch = flute_a_five_pitch;}   
+  else if (senseFinger[0] == fluteFiveA[0] && senseFinger[1] == fluteFiveA[1] && senseFinger[2] == fluteFiveA[2] &&
+           senseFinger[3] == fluteFiveA[3] && senseFinger[4] == fluteFiveA[4] && senseFinger[5] == fluteFiveA[5] &&
+           senseFinger[6] == fluteFiveA[6] && senseFinger[7] == fluteFiveA[7] && senseFinger[8] == fluteFiveA[8]) {pitch = fluteFiveAPitch;}   
 // Bb5 //
-  else if (sensefinger[0] == flute_bb_five[0] && sensefinger[1] == flute_bb_five[1] && sensefinger[2] == flute_bb_five[2] &&
-           sensefinger[3] == flute_bb_five[3] && sensefinger[4] == flute_bb_five[4] && sensefinger[5] == flute_bb_five[5] &&
-           sensefinger[6] == flute_bb_five[6] && sensefinger[7] == flute_bb_five[7] && sensefinger[8] == flute_bb_five[8]) {pitch = flute_bb_five_pitch;}
+  else if (senseFinger[0] == fluteFiveBb[0] && senseFinger[1] == fluteFiveBb[1] && senseFinger[2] == fluteFiveBb[2] &&
+           senseFinger[3] == fluteFiveBb[3] && senseFinger[4] == fluteFiveBb[4] && senseFinger[5] == fluteFiveBb[5] &&
+           senseFinger[6] == fluteFiveBb[6] && senseFinger[7] == fluteFiveBb[7] && senseFinger[8] == fluteFiveBb[8]) {pitch = fluteFiveBbPitch;}
 // B5 //
-  else if (sensefinger[0] == flute_b_five[0] && sensefinger[1] == flute_b_five[1] && sensefinger[2] == flute_b_five[2] &&
-           sensefinger[3] == flute_b_five[3] && sensefinger[4] == flute_b_five[4] && sensefinger[5] == flute_b_five[5] &&
-           sensefinger[6] == flute_b_five[6] && sensefinger[7] == flute_b_five[7] && sensefinger[8] == flute_b_five[8]) {pitch = flute_b_five_pitch;}   
+  else if (senseFinger[0] == fluteFiveB[0] && senseFinger[1] == fluteFiveB[1] && senseFinger[2] == fluteFiveB[2] &&
+           senseFinger[3] == fluteFiveB[3] && senseFinger[4] == fluteFiveB[4] && senseFinger[5] == fluteFiveB[5] &&
+           senseFinger[6] == fluteFiveB[6] && senseFinger[7] == fluteFiveB[7] && senseFinger[8] == fluteFiveB[8]) {pitch = fluteFiveBPitch;}   
   else {pitch = 0;}    
 }
 
@@ -186,41 +184,42 @@ void check_fingering() //Reads the digital inputs and compares them against the 
 ///////////////////////////////////// MODE ONE (Learning Aid) ///////////////////////////////////////////////////////////
 
 
-void mode_one() //Detects each button one at a time and determines if it has changed by comparing it against input_mem.
+void ModeLearn() //Detects each button one at a time and determines if it has changed by comparing it against inputMemory.
 {
   for (int j = 0; j < 10; j++)
   {
     switch(j) 
     {
-      case 1:
+      case 1: //no pin mapped to '1', 
         break;
       default:
         if (!digitalRead(j) == 1) 
         {
-          if (input_mem[j] == 0) 
+          if (inputMemory[j] == 0) 
           {
-            MIDI.sendNoteOn(input_mempitch[j], velocity, channel);
-            input_mem[j] = 1;
+            MIDI.sendNoteOn(inputMemoryPitch[j], velocity, channel);
+            inputMemory[j] = 1;
             ;
           }
-          else if (input_mem[j] == 1)
+          else if (inputMemory[j] == 1)
           {
             ;
           }
         }
         else 
         {
-          if (input_mem[j] == 1)
+          if (inputMemory[j] == 1)
           {
-            MIDI.sendNoteOff(input_mempitch[j], velocity, channel);
-            input_mem[j] = 0;
+            MIDI.sendNoteOff(inputMemoryPitch[j], velocity, channel);
+            inputMemory[j] = 0;
             ;
           }
-          else if (input_mem[j] == 0)
+          else if (inputMemory[j] == 0)
           {
             ;
           }
         }
+        break;
     }
   }
 }
@@ -228,17 +227,16 @@ void mode_one() //Detects each button one at a time and determines if it has cha
 ///////////////////////////////////// NON-MODE FUNCTIONS /////////////////////////////////////////////////////////
 
 
-void reset_vars() //If there is a change in the mode, this is called to make sure nothing affects the new mode or going back to the old mode.
+void ResetVars() //If there is a change in the mode, this is called to make sure nothing affects the new mode or going back to the old mode.
 {
-  active_note = 0;
+  activeNote = false;
   pitch = 0;
-  pitch_mem = 0;
-  input_button = 0;
+  pitchMem = 0;
   button = 0;
-  input_mem[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 0;
+  inputMemory[0, 1, 2, 3, 4, 5, 6, 7, 8, 9] = 0;
 }
 
-void setup() //Enables midi abilities and sets up inputs as pullup. This way, buttons need only be connected from Pin to Ground.
+void setup() //Enables MIDI abilities and sets up inputs as pullup. This way, buttons need only be connected from Pin to Ground.
 {
   MIDI.begin(MIDI_CHANNEL_OMNI);
   pinMode (0, INPUT_PULLUP);      //thumb key
@@ -254,27 +252,28 @@ void setup() //Enables midi abilities and sets up inputs as pullup. This way, bu
   
 }
 
-void loop()   //Reads the mode input and determines if mode 0 or mode 1. If there is a change in made (detected by mode_mem), then reset_vars is triggered.
+void loop()   //Reads the mode input and determines if mode 0 or mode 1. If there is a change in made (detected by modeMem), then reset_vars is triggered.
               //Repeats over and over until program is terminated by unplugging the Arduino board.
 {
   mode = !digitalRead(13);
   if (mode == 0) 
   {
-    if (mode != mode_mem) 
+    if (mode != modeMem) 
     {
-      reset_vars();
-      mode_mem = 0;
+      ResetVars();
+      modeMem = 0;
     }
-    mode_zero();
+    ModeSynth();
+    CheckSnapshot();
   }
   else 
   {
-    if (mode != mode_mem) 
+    if (mode != modeMem) 
     {
-      reset_vars();
-      mode_mem = 1;
+      ResetVars();
+      modeMem = 1;
     }
-    mode_one();
-    delay(delaytimer);
+    ModeLearn();
+    delay(delayTimer);
   }
 }
