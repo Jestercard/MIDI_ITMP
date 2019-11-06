@@ -40,6 +40,8 @@ int fluteFiveBPitch    = 83;
 int mode;                      // determines if mode 0 or 1 is activated
 int modeMem;                   // memory history of the mode, allows to determine if a new mode is being selected
 int delayTimer = 10;           // timer setting for the delays
+int velocity = 64;             // Dynamic for the note (Volume or Gain). Between 0 (silent) and 127 (loudest).
+int channel = 1;               // MIDI channel to send message ('1' by default).
 
 //Synth Mode variables
 
@@ -47,8 +49,6 @@ bool activeNote = false;       // 'false' means note is off. 'true' means note i
 int pitch = 0;                 // MIDI value for given note (ie, '72' is note C5).
 int pitchMem = 0;              // memory pitch MIDI value.
 int snapshotLarge = 0;         // highest number within the snapshot
-int velocity = 64;             // Dynamic for the note (Volume or Gain). Between 0 (silent) and 127 (loudest).
-int channel = 1;               // MIDI channel to send message ('1' by default).
 int noteOnThreshold = 100;     // threshold to trigger the activeNote to true.
 int noteOffThreshold = 50;     // threshold to trigger the activeNote to false.
 int snapshot[30];              // array that scans for the thresholds.
